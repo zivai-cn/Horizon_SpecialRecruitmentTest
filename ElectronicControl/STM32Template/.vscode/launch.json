@@ -1,0 +1,55 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/Debug/STM32Template.elf",
+
+            "name": "DAPLink(stm32)",
+            "request": "launch",
+            "type": "cortex-debug",
+
+            "servertype": "openocd",
+            "configFiles": [
+                "interface/cmsis-dap.cfg",
+                "target/stm32f1x.cfg"
+            ],
+
+            "openOCDLaunchCommands": [
+                "transport select swd",
+                "reset_config none"
+            ],
+
+            "runToEntryPoint": "main",
+            "showDevDebugOutput": "none",
+
+            "gdbPath": "arm-none-eabi-gdb.exe",
+            "serverpath": "openocd.exe"
+        },
+        {
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/Debug/STM32Template.elf",
+
+            "name": "ST-LINK(stm32)",
+            "request": "launch",
+            "type": "cortex-debug",
+
+            "servertype": "openocd",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f1x.cfg"
+            ],
+
+            "openOCDLaunchCommands": [
+                "transport select swd",
+                "reset_config none"
+            ],
+
+            "runToEntryPoint": "main",
+            "showDevDebugOutput": "none",
+
+            "gdbPath": "arm-none-eabi-gdb.exe",
+            "serverpath": "openocd.exe"
+        }
+    ]
+}
