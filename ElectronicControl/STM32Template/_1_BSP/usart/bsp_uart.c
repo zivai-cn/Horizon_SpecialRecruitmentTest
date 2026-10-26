@@ -14,20 +14,6 @@ USARTInstance *usart_find_instance(UART_HandleTypeDef *huart)
     return NULL;
 }
 
-//接收模式是否合法
-int usart_rx_mode_is_valid(USART_MODE mode)
-{
-    return mode == UART_MODE_IT || mode == UART_MODE_DMA;
-}
-
-//发送模式是否合法
-int usart_tx_mode_is_valid(USART_MODE mode)
-{
-    return mode == UART_MODE_POLLING ||
-           mode == UART_MODE_IT ||
-           mode == UART_MODE_DMA;
-}
-
 //发送完成：设置发送标志位为闲并通知模块
 void usart_tx_complete(USARTInstance *ins)
 {
@@ -101,8 +87,6 @@ USARTInstance *USARTRegister(USART_Init_Config_S *cfg)
 {
     if (cfg == NULL || cfg->huart == NULL || cfg->rx_buf == NULL || cfg->rx_size == 0 || usart_idx >= USART_MAX_INST || usart_find_instance(cfg->huart) != NULL)
         return NULL;
-    if (!usart_rx_mode_is_valid(cfg->rx_mode) || !usart_tx_mode_is_valid(cfg->tx_mode))
-        return NULL;
 
     USARTInstance *ins = &s_pool[usart_idx++];
     memset(ins, 0, sizeof(*ins));
@@ -135,9 +119,7 @@ int USARTSend(USARTInstance *ins, const uint8_t *buf, uint16_t len)
 //切换收发模式：发送必须空闲，接收模式切换后自动重新启动接收
 int USARTSetMode(USARTInstance *ins, USART_MODE rx_mode, USART_MODE tx_mode)
 {
-    if (ins == NULL || ins->tx_busy ||
-        !usart_rx_mode_is_valid(rx_mode) ||
-        !usart_tx_mode_is_valid(tx_mode))
+    if (ins == NULL || ins->tx_busy)
         return -1;
 
     if (rx_mode != ins->rx_mode)

@@ -22,7 +22,7 @@ static SPIInstance *spi_find_who_got(SPI_HandleTypeDef *hspi)
         return &s_pool[i];
     }
 
-    return NULL;
+    return NULL;//未找到占用总线的实例
 }
 
 //按总线和片选查找实例，用于注册查重
