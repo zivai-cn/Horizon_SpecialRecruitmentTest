@@ -1,12 +1,12 @@
-#include "bsp_uart.h"
 #include <string.h>
+#include "bsp_uart.h"
 
 //实例池
 static USARTInstance  s_pool[USART_MAX_INST];
 static uint8_t        usart_idx = 0;
 
 //按huart查找对应的实例
-static USARTInstance *usart_find_instance(UART_HandleTypeDef *huart)
+USARTInstance *usart_find_instance(UART_HandleTypeDef *huart)
 {
     for (uint8_t i = 0; i < usart_idx; i++)
         if (s_pool[i].huart == huart)
@@ -15,13 +15,13 @@ static USARTInstance *usart_find_instance(UART_HandleTypeDef *huart)
 }
 
 //接收模式是否合法
-static int usart_rx_mode_is_valid(USART_MODE mode)
+int usart_rx_mode_is_valid(USART_MODE mode)
 {
     return mode == UART_MODE_IT || mode == UART_MODE_DMA;
 }
 
 //发送模式是否合法
-static int usart_tx_mode_is_valid(USART_MODE mode)
+int usart_tx_mode_is_valid(USART_MODE mode)
 {
     return mode == UART_MODE_POLLING ||
            mode == UART_MODE_IT ||
@@ -29,7 +29,7 @@ static int usart_tx_mode_is_valid(USART_MODE mode)
 }
 
 //发送完成：设置发送标志位为闲并通知模块
-static void usart_tx_complete(USARTInstance *ins)
+void usart_tx_complete(USARTInstance *ins)
 {
     ins->tx_busy = 0;
     if (ins->on_tx_done != NULL)
@@ -37,7 +37,7 @@ static void usart_tx_complete(USARTInstance *ins)
 }
 
 //启动发送并设置忙标志
-static int usart_start_tx(USARTInstance *ins, const uint8_t *buf, uint16_t len)
+int usart_start_tx(USARTInstance *ins, uint8_t *buf, uint16_t len)
 {
     HAL_StatusTypeDef result;
 
@@ -72,7 +72,7 @@ static int usart_start_tx(USARTInstance *ins, const uint8_t *buf, uint16_t len)
 }
 
 //启动接收
-static int usart_start_rx(USARTInstance *ins)
+int usart_start_rx(USARTInstance *ins)
 {
     HAL_StatusTypeDef result;
 
@@ -97,7 +97,7 @@ static int usart_start_rx(USARTInstance *ins)
 
 
 //注册串口实例，成功返回实例指针，失败返回 NULL
-USARTInstance *USARTRegister(const USART_Init_Config_S *cfg)
+USARTInstance *USARTRegister(USART_Init_Config_S *cfg)
 {
     if (cfg == NULL || cfg->huart == NULL || cfg->rx_buf == NULL || cfg->rx_size == 0 || usart_idx >= USART_MAX_INST || usart_find_instance(cfg->huart) != NULL)
         return NULL;

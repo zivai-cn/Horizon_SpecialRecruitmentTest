@@ -23,25 +23,27 @@ typedef void (*uart_callback_t)(USARTInstance *instance);
 struct USARTInstance
 {
     UART_HandleTypeDef *huart;          //HAL串口句柄
-
-    USART_MODE          rx_mode;        //接收模式
-    USART_MODE          tx_mode;        //发送模式
-
-    uint8_t            *rx_buf;         //接收缓冲（模块提供）
-    uint16_t            rx_size;        //缓冲大小
-    volatile uint16_t   rx_len;         //本次收到的数据长度
-
-    uart_callback_t     on_rx;          //收完一帧回调
-    uart_callback_t     on_tx_done;     //发送完成回调
+    uint32_t            baudrate;        //波特率
     void               *owner;          //指向所属模块
 
-    volatile uint8_t    tx_busy;        //发送忙标志
+    USART_MODE          rx_mode;        //接收模式
+    uint8_t            *rx_buf;         //接收缓冲（模块提供）
+    uint16_t            rx_size;        //缓冲大小
+    uint16_t            rx_len;         //本次收到的数据长度
+    uart_callback_t     on_rx;          //收完一帧回调
+    
+    
+    USART_MODE          tx_mode;        //发送模式
+    uint16_t            tx_size;        //缓冲大小
+    uart_callback_t     on_tx_done;     //发送完成回调
+    uint8_t             tx_busy;        //发送忙标志
 };
 
 //注册配置
 typedef struct
 {
     UART_HandleTypeDef *huart;
+    uint32_t            baudrate;
     USART_MODE          rx_mode;
     USART_MODE          tx_mode;
     uint8_t            *rx_buf;
@@ -52,13 +54,12 @@ typedef struct
 } USART_Init_Config_S;
 
 //注册实例函数
-USARTInstance *USARTRegister(const USART_Init_Config_S *cfg);
+USARTInstance *USARTRegister( USART_Init_Config_S *cfg);
 
 //发送一帧；轮询模式下完成回调在函数返回前执行
 int USARTSend(USARTInstance *ins, const uint8_t *buf, uint16_t len);
 
 //切换收发模式；发送忙时禁止修改，接收模式切换后自动重启接收
-int USARTSetMode(USARTInstance *ins, USART_MODE rx_mode,
-                 USART_MODE tx_mode);
+int USARTSetMode(USARTInstance *ins, USART_MODE rx_mode, USART_MODE tx_mode);
 
 #endif

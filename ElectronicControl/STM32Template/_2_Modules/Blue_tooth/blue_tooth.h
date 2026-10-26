@@ -9,15 +9,16 @@
 
 // 单帧最大数据长度
 #define BLUETOOTH_DATASIZE    128
-// 帧头(1) + 长度(1) + 数据 + 帧尾(1)
-#define BLUETOOTH_BUFFERSIZE  (BLUETOOTH_DATASIZE + 3)
+// 帧头(1) 帧尾(1)
+#define BLUETOOTH_BUFFERSIZE  (BLUETOOTH_DATASIZE + 2)
+// 发送队列深度
+#define BLUETOOTH_TX_QUEUE_LEN 4
 
 // 数据帧头尾
 #define FRAME_HEAD  0x54
 #define FRAME_END   0x55
 
-// 发送队列深度
-#define BLUETOOTH_TX_QUEUE_LEN 4
+
 
 // 一帧完整数据（队列元素）
 typedef struct
@@ -29,19 +30,17 @@ typedef struct
 // 蓝牙数据结构体
 typedef struct
 {
-    USARTInstance      *instance;
-    SemaphoreHandle_t   data_ready_semaphore;
-    QueueHandle_t       tx_queue;
-    BluetoothFrame      tx_frame;           // 正在发送的帧，HAL 异步引用，必须常驻
-    volatile uint8_t    new_data_flag;
-    uint8_t             receive_data[BLUETOOTH_DATASIZE];
-    uint8_t             receive_length;
-} BluetoothData;
+    USARTInstance      *instance;             // 串口实例指针
+    SemaphoreHandle_t   data_ready_semaphore; // 数据就绪二进制信号量
+    QueueHandle_t       tx_queue;             // 发送队列句柄
+    BluetoothFrame      tx_frame;             // 正在发送的帧
+    volatile uint8_t    new_data_flag;        // 新数据标志位
+    BluetoothFrame      rx_frame;               // 接收帧
+} Bluetooth;
 
-BluetoothData *BluetoothInit(UART_HandleTypeDef *huart);
+Bluetooth *BluetoothInit(UART_HandleTypeDef *huart);
 
 // 组帧后放入发送队列，0 表示已入队，-1 表示参数错误或队列已满
-int BluetoothSendData(BluetoothData *data, const uint8_t *payload,
-                      uint8_t payload_length);
+int BluetoothSendData(Bluetooth *bluetooth, const uint8_t *data, uint8_t data_length);
 
 #endif
